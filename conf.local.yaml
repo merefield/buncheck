@@ -1,0 +1,5 @@
+database:
+  dev:
+    psn: postgres://resonate_dev_user:password@127.0.0.1:5432/buncheck?sslmode=disable
+    log_queries: false
+    timeout_seconds: 10
