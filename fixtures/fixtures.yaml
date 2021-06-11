@@ -4,20 +4,20 @@
       username: jhendrix
       full_name: Jimmy Hendrix
       display_name:
-        String: 'Bravo'
-        Valid: true
+        string: 'Bravo'
+        valid: true
       email: jimmy@hendrix.com
     - id: 5253747c-2b8c-40e2-8a70-bab91348a9bd
       username: mdavis
       full_name: Miles Davis
       display_name:
-        String: 'Foxtrot'
-        Valid: true
+        string: 'Foxtrot'
+        valid: true
       email: miles@davis.com
     - id: 90b26113-37e0-456a-9f75-01db0eb550f8
       username: jcoltrane
       full_name: John Coltrane
       display_name:
-        String: 'Karma'
-        Valid: true
+        string: 'Karma'
+        valid: true
       email: john@coltrane.com
