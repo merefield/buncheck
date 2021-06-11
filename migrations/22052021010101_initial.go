@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	model "github.com/merefield/buncheck/models"
+	model "github.com/merefield/buncheck/model"
 	"github.com/uptrace/bun"
 )
 

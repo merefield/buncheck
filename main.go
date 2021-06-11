@@ -2,19 +2,24 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"os"
+
+	model "github.com/merefield/buncheck/model"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/merefield/buncheck/app"
 	"github.com/merefield/buncheck/migrations"
 	bun "github.com/uptrace/bun"
+	"github.com/uptrace/bun/dbfixture"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/migrate"
 
 	grpclog "google.golang.org/grpc/grpclog"
 
+	"github.com/uptrace/bun/extra/bundebug"
 	"github.com/urfave/cli/v2"
 )
 
@@ -40,9 +45,40 @@ var serverCommand = &cli.Command{
 
 		cfg := buncheckapp.Cfg
 
+		//cfg.PreferSimpleProtocol = true
+
 		sqldb, err := sql.Open("pgx", cfg.DB.Dev.PSN)
 
-		_ = bun.NewDB(sqldb, pgdialect.New())
+		db := bun.NewDB(sqldb, pgdialect.New())
+
+		db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose()))
+
+		// if err := createSchema(c, db); err != nil {
+		// 	panic(err)
+		// }
+
+		users := []*model.User{
+			{Username: "user 1", Email: "bob"},
+			{Username: "user 2", Email: "jim"},
+		}
+		if _, err := db.NewInsert().Model(&users).Exec(c.Context); err != nil {
+			return err
+		}
+
+		user := new(model.User)
+		if err := db.NewSelect().
+			Model(user).
+			//Column("user.*").
+			// Relation("OwnerOfGroups", func(q *bun.SelectQuery) *bun.SelectQuery {
+			// 	return q.Where("active IS TRUE")
+			// }).
+			// OrderExpr("user.id ASC").
+			// Limit(1).
+			Scan(c.Context); err != nil {
+			panic(err)
+		}
+		fmt.Println(user.ID, user.Username) //, user.OwnerOfGroups[0])
+		// Output: 1 user 1 &{1 en true 1} &{2 ru true 1}
 
 		return err
 	},
@@ -142,6 +178,40 @@ func newDBCommand(migrations *migrate.Migrations) *cli.Command {
 					defer app.Stop()
 
 					return migrations.CreateSQL(ctx, app.DB(), c.Args().Get(0))
+				},
+			},
+			{
+				Name:  "fixtures",
+				Usage: "load fixtures",
+				Action: func(c *cli.Context) error {
+					ctx, app, err := app.StartCLI(c)
+					if err != nil {
+						return err
+					}
+					defer app.Stop()
+
+					cfg := app.Cfg
+
+					sqldb, err := sql.Open("pgx", cfg.DB.Dev.PSN)
+					if err != nil {
+						return err
+					}
+
+					db := bun.NewDB(sqldb, pgdialect.New())
+
+					// Let the db know about the models.
+					models := []interface{}{
+						(*model.UserGroup)(nil),
+						(*model.User)(nil),
+					}
+
+					for _, this_model := range models {
+						db.RegisterModel(this_model)
+					}
+
+					fixture := dbfixture.New(db, dbfixture.WithTruncateTables())
+
+					return fixture.Load(ctx, os.DirFS("fixtures"), "fixtures.yaml")
 				},
 			},
 		},
