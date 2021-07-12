@@ -63,6 +63,21 @@ var serverCommand = &cli.Command{
 		}
 		if _, err := db.NewInsert().Model(&users).Exec(c.Context); err != nil {
 			return err
+		} else {
+			db.NewDelete().
+				Model(new(model.User)).
+				Where("username LIKE '%user %'").
+				Exec(c.Context)
+
+			_, err = db.NewUpdate().
+				Model(new(model.User)).
+				Set("deleted_at = NULL").
+				WhereAllWithDeleted().
+				Exec(c.Context)
+
+			if err != nil {
+				return err
+			}
 		}
 
 		user := new(model.User)
@@ -99,7 +114,9 @@ func newDBCommand(migrations *migrate.Migrations) *cli.Command {
 					}
 					defer app.Stop()
 
-					return migrations.Init(ctx, app.DB())
+					migrator := migrate.NewMigrator(app.DB(), migrations)
+
+					return migrator.Init(ctx)
 				},
 			},
 			{
@@ -112,7 +129,11 @@ func newDBCommand(migrations *migrate.Migrations) *cli.Command {
 					}
 					defer app.Stop()
 
-					return migrations.Migrate(ctx, app.DB())
+					migrator := migrate.NewMigrator(app.DB(), migrations)
+
+					_, err = migrator.Migrate(ctx)
+
+					return err
 				},
 			},
 			{
@@ -125,7 +146,11 @@ func newDBCommand(migrations *migrate.Migrations) *cli.Command {
 					}
 					defer app.Stop()
 
-					return migrations.Rollback(ctx, app.DB())
+					migrator := migrate.NewMigrator(app.DB(), migrations)
+
+					_, err = migrator.Rollback(ctx)
+
+					return err
 				},
 			},
 			{
@@ -138,7 +163,9 @@ func newDBCommand(migrations *migrate.Migrations) *cli.Command {
 					}
 					defer app.Stop()
 
-					return migrations.Lock(ctx, app.DB())
+					migrator := migrate.NewMigrator(app.DB(), migrations)
+
+					return migrator.Lock(ctx)
 				},
 			},
 			{
@@ -151,7 +178,9 @@ func newDBCommand(migrations *migrate.Migrations) *cli.Command {
 					}
 					defer app.Stop()
 
-					return migrations.Unlock(ctx, app.DB())
+					migrator := migrate.NewMigrator(app.DB(), migrations)
+
+					return migrator.Unlock(ctx)
 				},
 			},
 			{
@@ -164,7 +193,11 @@ func newDBCommand(migrations *migrate.Migrations) *cli.Command {
 					}
 					defer app.Stop()
 
-					return migrations.CreateGo(ctx, app.DB(), c.Args().Get(0))
+					migrator := migrate.NewMigrator(app.DB(), migrations)
+
+					_, err = migrator.CreateGo(ctx, c.Args().Get(0))
+
+					return err
 				},
 			},
 			{
@@ -177,7 +210,11 @@ func newDBCommand(migrations *migrate.Migrations) *cli.Command {
 					}
 					defer app.Stop()
 
-					return migrations.CreateSQL(ctx, app.DB(), c.Args().Get(0))
+					migrator := migrate.NewMigrator(app.DB(), migrations)
+
+					_, err = migrator.CreateSQL(ctx, c.Args().Get(0))
+
+					return err
 				},
 			},
 			{

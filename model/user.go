@@ -9,9 +9,10 @@ import (
 
 type UserGroup struct {
 	ID          uuid.UUID `bun:",unique,notnull"`
-	CreatedAt   time.Time `bun:"default:now()"`
+	CreatedAt   time.Time `bun:",nullzero,notnull,default:current_timestamp"`
 	UpdatedAt   time.Time
-	DisplayName string `bun:",unique,notnull"`
+	DeletedAt   time.Time `bun:",soft_delete"`
+	DisplayName string    `bun:",unique,notnull"`
 	Description string
 	OwnerID     uuid.UUID
 	Active      bool `bun:",default:false"`
@@ -20,8 +21,9 @@ type UserGroup struct {
 // User basic definition of a User and its meta
 type User struct {
 	ID             uuid.UUID `bun:"type:uuid,default:uuid_generate_v4()"`
-	CreatedAt      time.Time `bun:"default:now()"`
+	CreatedAt      time.Time `bun:",nullzero,notnull,default:current_timestamp"`
 	UpdatedAt      time.Time
+	DeletedAt      time.Time      `bun:",soft_delete"`
 	Username       string         `bun:",notnull,unique"`
 	FullName       string         `bun:",notnull"`
 	Email          string         `bun:",unique,notnull"`

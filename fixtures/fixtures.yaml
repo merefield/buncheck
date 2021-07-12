@@ -1,6 +1,7 @@
 - model: User
   rows:
     - id: 243b4178-6f98-4bf1-bbb1-46b57a901816
+      created_at: '{{ now }}'
       username: jhendrix
       full_name: Jimmy Hendrix
       display_name:
@@ -8,6 +9,7 @@
         valid: true
       email: jimmy@hendrix.com
     - id: 5253747c-2b8c-40e2-8a70-bab91348a9bd
+      created_at: '{{ now }}'
       username: mdavis
       full_name: Miles Davis
       display_name:
@@ -15,6 +17,7 @@
         valid: true
       email: miles@davis.com
     - id: 90b26113-37e0-456a-9f75-01db0eb550f8
+      created_at: '{{ now }}'
       username: jcoltrane
       full_name: John Coltrane
       display_name:
